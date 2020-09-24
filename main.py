@@ -11,7 +11,7 @@ slack_web_client = WebClient(token=os.getenv("SLACK_TOKEN"))
 
 app = Flask(__name__)
 
-supported_data_types = ['cases', 'deaths']
+supported_data_types = ['cases', 'deaths', 'recoveries']
 
 messageTemplate = """
 New %data_type% for %location%:
@@ -57,7 +57,6 @@ locationsv2 = {
 
 def handle_command(request1):
     text = request1['text'].lower()
-    data = " "
     if text.startswith('help'):
         messagecontent = helpTemplate
         message = {"channel": request1['channel_id'], "blocks": [
@@ -65,6 +64,9 @@ def handle_command(request1):
         ]}
         slack_web_client.chat_postMessage(**message)
         return
+    data = covid.new()
+    location = 'aus'
+    data_type = 'cases'
     if text.startswith('new '):
         junk, text = text.split('new ')
         for i in supported_data_types:
@@ -74,16 +76,10 @@ def handle_command(request1):
                 else:
                     data_type = text
                     location = 'aus'
-                print("location: %s, data_type: %s" % (location, data_type))
+                # print("location: %s, data_type: %s" % (location, data_type))
                 data = covid.new(location=location, data_type=data_type)
             else:
                 pass
-        if data != " ":
-            pass
-        else:
-            data = covid.new()
-            location = 'aus'
-            data_type = 'cases'
     else:
         data = "Error: that isn't supported yet"
     if data != "Error: that isn't supported yet":
